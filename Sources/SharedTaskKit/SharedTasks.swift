@@ -25,7 +25,7 @@ import Foundation
  Пример пула загрузок изображений с дедупликацией по адресу:
 
      let images = SharedTasks(
-         taskQueue: TaskQueue(limit: 10),
+         maxConcurrentTasks: 10,
          operation: loadImage
      )
 
@@ -71,6 +71,27 @@ public actor SharedTasks<Key: Hashable & Sendable, Success: Sendable> {
     ) {
         self.taskQueue = taskQueue
         self.operation = operation
+    }
+    /**
+     Создаёт пул общих задач с численным ограничением операций.
+
+     Удобный вариант `init(taskQueue:operation:)`: очередь задач
+     создаётся внутри с заданным лимитом. Своя очередь нужна, когда
+     её делят несколько пулов или требуется режим `.unlimited`.
+
+     - Parameter maxConcurrentTasks: Максимальное число одновременно
+       выполняющихся операций. Значения меньше единицы приводятся
+       к единице.
+     - Parameter operation: Операция, выполняемая задачей по ключу.
+     */
+    public init(
+        maxConcurrentTasks: Int,
+        operation: @escaping @Sendable (Key) async throws -> Success
+    ) {
+        self.init(
+            taskQueue: TaskQueue(limit: maxConcurrentTasks),
+            operation: operation
+        )
     }
 
     /**

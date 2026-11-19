@@ -68,10 +68,9 @@ let queue = TaskQueue(limit: .unlimited)
 Все, кто запросил тот же ключ, получают результат одной и той же задачи.
 
 ```swift
-let images = SharedTasks<URL, UIImage>(
-    taskQueue: TaskQueue(limit: 10),
-    operation: { url in try await loadImage(from: url) }
-)
+let images = SharedTasks<URL, UIImage>(maxConcurrentTasks: 10) { url in
+    try await loadImage(from: url)
+}
 
 // запускаем два запроса одной и той же картинки
 async let first = images.value(for: url)
@@ -83,6 +82,10 @@ let (image1, image2) = try await (first, second)
 
 Ключ — любой тип, соответствующий `Hashable & Sendable`
 (`URL`, `String`, `Int` и т.п.).
+
+Инициализаторов два: `maxConcurrentTasks:` — простой вариант,
+очередь создаётся внутри; `taskQueue:` — если нужна своя очередь
+(например, `.unlimited` или общая на несколько пулов).
 
 ### Как работает отмена
 
@@ -117,7 +120,7 @@ final class ImageLoader {
      результат — загруженное изображение.
      */
     private let tasks = SharedTasks<URL, UIImage>(
-        taskQueue: TaskQueue(limit: 4)
+        maxConcurrentTasks: 4
     ) { url in
         let (data, _) = try await URLSession.shared.data(from: url)
         guard let image = UIImage(data: data) else {

@@ -5,6 +5,14 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [0.2.0] — 2026-11-19
+
+### Добавлено
+
+- Удобный инициализатор `SharedTasks(maxConcurrentTasks:operation:)`:
+  очередь задач создаётся внутри с заданным лимитом, передавать
+  `TaskQueue` не нужно.
+
 ## [0.1.0] — 2026-11-19
 
 Первый выпуск.
